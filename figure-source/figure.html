@@ -1,0 +1,27 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><script src="core.js"></script><script>
+/* A tabletop portrait easel, not a face-generating machine.
+ Parts: desk board supports two posts; posts hold a thick portrait panel.
+ Front: a mounted photographic print, divided into 40 by 52 regions.
+ Actions: rotate the easel; recolour its frame; return to precision editing.
+ No working interior: no fictitious see-through mechanism. */
+let portraitPrint='';
+const portraitUI=mountFigure({fig:'01',title:'Face Puzzle',turn:'full',size:[35,80,104],palette:'mustard',credit:false,state:{},
+scene:(st,m)=>{
+ const pieces=[];const part=(bounds,svg)=>pieces.push({box:bounds,svg});
+ part([[0,0,0],[35,80,4]],box(0,0,0,35,80,4,PALS.cobalt));
+ for(const y of [12,64])part([[8,y,4],[13,y+4,98]],box(8,y,4,13,y+4,98,m));
+ let panel=box(13,6,13,17,74,101,m);
+ if(vis([1,0,0])){
+ const origin=P(17.1,70,96),u=Dv(0,-.1,0),v=Dv(0,0,-.1);
+ let face=portraitPrint?`<image href="${portraitPrint}" width="600" height="780"/>`: '<rect width="600" height="780" fill="#fff1c8"/>';
+ for(let i=1;i<40;i++)face+=`<path d="M${i*15} 0V780" stroke="#fff" opacity=".35" stroke-width="1"/>`;
+ for(let i=1;i<52;i++)face+=`<path d="M0 ${i*15}H600" stroke="#fff" opacity=".35" stroke-width="1"/>`;
+ panel+=act('edit',`<g transform="${txM(origin,u,v)}">${face}</g>`);
+ }
+ part([[13,6,13],[17.2,74,101]],panel);
+ return castShadow([[0,0,0],[35,0,0],[35,80,0],[0,80,0],[13,6,101],[17,74,101]],0)+byDepth(pieces);
+},buttons:[{label:'Edit this face',onClick:()=>parent.postMessage({type:'edit'},'*')}],acts:{edit:()=>parent.postMessage({type:'edit'},'*')}});
+addEventListener('message',e=>{if(e.source===parent&&e.data?.type==='portrait'&&/^data:image\//.test(e.data.image)){portraitPrint=e.data.image;portraitUI.render()}});
+document.getElementById('vreset').textContent='Front view';document.getElementById('vspin').textContent='Turntable';
+</script><style>body{background:#faf4e5}header,#readout,.ctl:has(#wb){display:none!important}.stage{min-height:320px}#art{filter:none}.controls{font-family:system-ui}button{font-family:inherit}</style></body></html>
+
